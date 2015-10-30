@@ -60,7 +60,7 @@ public class IndexReader
 
   private final Properties remoteIndexProperties;
 
-  private final String repositoryId;
+  private final String indexId;
 
   private final Date publishedTimestamp;
 
@@ -78,21 +78,21 @@ public class IndexReader
     try {
       if (local != null) {
         localIndexProperties = loadProperties(local.open(INDEX_FILE_PREFIX + ".properties"));
-        String remoteRepositoryId = remoteIndexProperties.getProperty("nexus.index.id");
-        String localRepositoryId = localIndexProperties.getProperty("nexus.index.id");
-        if (remoteRepositoryId == null || localRepositoryId == null || !remoteRepositoryId.equals(localRepositoryId)) {
+        String remoteIndexId = remoteIndexProperties.getProperty("nexus.index.id");
+        String localIndexId = localIndexProperties.getProperty("nexus.index.id");
+        if (remoteIndexId == null || localIndexId == null || !remoteIndexId.equals(localIndexId)) {
           throw new IllegalArgumentException(
-              "local and remote repository IDs does not match or is null: " + localRepositoryId + ", " +
-                  remoteRepositoryId);
+              "local and remote index IDs does not match or is null: " + localIndexId + ", " +
+                  remoteIndexId);
         }
-        this.repositoryId = localRepositoryId;
+        this.indexId = localIndexId;
         this.publishedTimestamp = INDEX_DATE_FORMAT.parse(localIndexProperties.getProperty("nexus.index.timestamp"));
         this.incremental = canRetrieveAllChunks();
         this.chunkNames = calculateChunkNames();
       }
       else {
         localIndexProperties = null;
-        this.repositoryId = remoteIndexProperties.getProperty("nexus.index.id");
+        this.indexId = remoteIndexProperties.getProperty("nexus.index.id");
         this.publishedTimestamp = INDEX_DATE_FORMAT.parse(remoteIndexProperties.getProperty("nexus.index.timestamp"));
         this.incremental = false;
         this.chunkNames = calculateChunkNames();
@@ -106,10 +106,11 @@ public class IndexReader
   }
 
   /**
-   * Returns the repository ID that remote index declares.
+   * Returns the index context ID that published index has set. Usually it is equal to "repository ID" used in {@link
+   * Record.Type#DESCRIPTOR} but does not have to be.
    */
-  public String getRepositoryId() {
-    return repositoryId;
+  public String getIndexId() {
+    return indexId;
   }
 
   /**

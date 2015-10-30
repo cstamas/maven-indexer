@@ -20,10 +20,15 @@ package org.apache.maven.index.reader;
  */
 
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.maven.index.reader.Record.Type;
 import org.junit.Test;
+
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 /**
  * UT for {@link ChunkReader}
@@ -32,21 +37,30 @@ public class ChunkReaderTest
 {
   @Test
   public void simple() throws IOException {
-    final FileWriter writer = new FileWriter("/Users/cstamas/tmp/maven-indexer/nexus-maven-repository-index.dump");
-    final ChunkReader chunkReader = new ChunkReader("full", new FileInputStream("/Users/cstamas/tmp/maven-indexer/nexus-maven-repository-index.gz"));
+    final Map<Type, Integer> recordTypes = new HashMap<Type, Integer>();
+    recordTypes.put(Type.DESCRIPTOR, 0);
+    recordTypes.put(Type.ROOT_GROUPS, 0);
+    recordTypes.put(Type.ALL_GROUPS, 0);
+    recordTypes.put(Type.ARTIFACT_ADD, 0);
+    recordTypes.put(Type.ARTIFACT_REMOVE, 0);
+
+    final ChunkReader chunkReader = new ChunkReader("full",
+        new FileInputStream("src/test/resources/nexus-maven-repository-index.gz"));
     try {
-      writer.write("getVersion=" + chunkReader.getVersion() + "\n");
-      writer.write("getTimestamp=" + chunkReader.getTimestamp() + "\n");
-      writer.write("= = = = = = \n");
+      assertThat(chunkReader.getVersion(), equalTo(1));
+      assertThat(chunkReader.getTimestamp().getTime(), equalTo(1243533418015L));
       for (Record record : chunkReader) {
-        writer.write(record.getExpanded() + "\n");
-        //writer.write("--------- \n");
-        //writer.write(record.getRaw() + "\n");
+        recordTypes.put(record.getType(), recordTypes.get(record.getType()) + 1);
       }
     }
     finally {
       chunkReader.close();
-      writer.close();
     }
+
+    assertThat(recordTypes.get(Type.DESCRIPTOR), equalTo(1));
+    assertThat(recordTypes.get(Type.ROOT_GROUPS), equalTo(1));
+    assertThat(recordTypes.get(Type.ALL_GROUPS), equalTo(1));
+    assertThat(recordTypes.get(Type.ARTIFACT_ADD), equalTo(2));
+    assertThat(recordTypes.get(Type.ARTIFACT_REMOVE), equalTo(0));
   }
 }

@@ -24,9 +24,13 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.util.Arrays;
 
-import org.apache.maven.index.reader.Record.Type;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 /**
  * UT for {@link IndexReader}
@@ -35,12 +39,46 @@ public class IndexReaderTest
 {
   @Test
   public void simple() throws IOException {
-    final Writer writer = new OutputStreamWriter(System.out);
     final IndexReader indexReader = new IndexReader(
         null,
-        new DirectoryResourceHandler(new File("/Users/cstamas/tmp/maven-indexer/")));
+        new DirectoryResourceHandler(new File("src/test/resources/")));
     try {
-      writer.write("indexRepoId=" + indexReader.getRepositoryId() + "\n");
+      assertThat(indexReader.getIndexId(), equalTo("apache-snapshots-local"));
+      assertThat(indexReader.getPublishedTimestamp().getTime(), equalTo(1243533418015L));
+      assertThat(indexReader.isIncremental(), equalTo(false));
+      assertThat(indexReader.getChunkNames(), equalTo(Arrays.asList("nexus-maven-repository-index.gz")));
+      int chunks = 0;
+      int records = 0;
+      for (ChunkReader chunkReader : indexReader) {
+        chunks++;
+        assertThat(chunkReader.getName(), equalTo("nexus-maven-repository-index.gz"));
+        assertThat(chunkReader.getVersion(), equalTo(1));
+        assertThat(chunkReader.getTimestamp().getTime(), equalTo(1243533418015L));
+        for (Record record : chunkReader) {
+          records++;
+        }
+      }
+
+      assertThat(chunks, equalTo(1));
+      assertThat(records, equalTo(5));
+    }
+    finally {
+      indexReader.close();
+    }
+  }
+
+  @Test
+  @Ignore("Here for example but test depending on external resource is not nice thing to have")
+  public void central() throws Exception {
+    final File tempDir = File.createTempFile("index-reader", "tmp");
+    tempDir.mkdirs();
+    final Writer writer = new OutputStreamWriter(System.out);
+    final IndexReader indexReader = new IndexReader(
+        new DirectoryResourceHandler(tempDir),
+        new HttpResourceHandler(new URL("http://repo1.maven.org/maven2/.index/"))
+    );
+    try {
+      writer.write("indexRepoId=" + indexReader.getIndexId() + "\n");
       writer.write("indexLastPublished=" + indexReader.getPublishedTimestamp() + "\n");
       writer.write("isIncremental=" + indexReader.isIncremental() + "\n");
       writer.write("indexRequiredChunkNames=" + indexReader.getChunkNames() + "\n");
@@ -50,45 +88,10 @@ public class IndexReaderTest
         writer.write("chunkPublished=" + chunkReader.getTimestamp() + "\n");
         writer.write("= = = = = = \n");
         for (Record record : chunkReader) {
-          //if (Type.ARTIFACT_REMOVE == record.getType()) {
-          if (Type.ARTIFACT_ADD == record.getType() && record.getExpanded().get("_packaging") == null && record.getExpanded().get("_classifier") != null) {
-            writer.write(record.getExpanded() + "\n");
-            writer.write(record.getRaw() + "\n");
-          }
-          //writer.write(record.getExpanded() + "\n");
-          //writer.write("--------- \n");
-          //writer.write(record.getRaw() + "\n");
+          writer.write(record.getExpanded() + "\n");
+          writer.write("--------- \n");
+          writer.write(record.getRaw() + "\n");
         }
-      }
-    }
-    finally {
-      indexReader.close();
-      writer.close();
-    }
-  }
-
-  @Test
-  public void central() throws Exception {
-    final Writer writer = new OutputStreamWriter(System.out);
-    final IndexReader indexReader = new IndexReader(
-        new DirectoryResourceHandler(new File("/Users/cstamas/tmp/maven-indexer/")),
-        new HttpResourceHandler(new URL("http://repo1.maven.org/maven2/.index/"))
-    );
-    try {
-      writer.write("indexRepoId=" + indexReader.getRepositoryId() + "\n");
-      writer.write("indexLastPublished=" + indexReader.getPublishedTimestamp() + "\n");
-      writer.write("isIncremental=" + indexReader.isIncremental() + "\n");
-      writer.write("indexRequiredChunkNames=" + indexReader.getChunkNames() + "\n");
-      for (ChunkReader chunkReader : indexReader) {
-        writer.write("chunkName=" + chunkReader.getName() + "\n");
-        writer.write("chunkVersion=" + chunkReader.getVersion() + "\n");
-        writer.write("chunkPublished=" + chunkReader.getTimestamp() + "\n");
-        writer.write("= = = = = = \n");
-        //for (Record record : chunkReader) {
-        //  writer.write(record.getExpanded() + "\n");
-        //writer.write("--------- \n");
-        //writer.write(record.getRaw() + "\n");
-        //}
       }
     }
     finally {
