@@ -152,7 +152,7 @@ public class Record
      * Artifact ADD record. Records of this type should be added to your indexing system.
      * Contains following entries:
      * <ul>
-     * <li>{@link #REC_MODIFIED} (when index discovered artifact)</li>
+     * <li>{@link #REC_MODIFIED} (when record was added/modified on index)</li>
      * <li>{@link #GROUP_ID}</li>
      * <li>{@link #ARTIFACT_ID}</li>
      * <li>{@link #VERSION}</li>
@@ -167,9 +167,9 @@ public class Record
      * <li>{@link #NAME}</li>
      * <li>{@link #DESCRIPTION}</li>
      * <li>{@link #SHA1}</li>
-     * <li>{@link #CLASSNAMES} (if published by remote index)</li>
-     * <li>{@link #PLUGIN_PREFIX} (if artifact is a maven plugin, see {@link #PACKAGING})</li>
-     * <li>{@link #PLUGIN_GOALS} (if artifact is a maven plugin, see {@link #PACKAGING})</li>
+     * <li>{@link #CLASSNAMES} (optional)</li>
+     * <li>{@link #PLUGIN_PREFIX} (optional, for maven-plugins only)</li>
+     * <li>{@link #PLUGIN_GOALS} (optional, for maven-plugins only)</li>
      * </ul>
      */
     ARTIFACT_ADD,
