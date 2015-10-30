@@ -171,25 +171,23 @@ public class ChunkReader
       else if (recordMap.containsKey("rootGroups")) {
         return new Record(Type.ROOT_GROUPS, recordMap, expandRootGroups(recordMap));
       }
+      else if (recordMap.containsKey("del")) {
+        return new Record(Type.ARTIFACT_REMOVE, recordMap, expandDeletedArtifact(recordMap));
+      }
       else {
-        if (recordMap.containsKey("del")) {
-          return new Record(Type.ARTIFACT_REMOVE, recordMap, expandDeletedArtifact(recordMap));
-        }
-        else {
-          // Fix up UINFO field wrt MINDEXER-41
-          final String uinfo = recordMap.get(UINFO);
-          final String info = recordMap.get(INFO);
-          if (uinfo != null && !(info == null || info.trim().length() == 0)) {
-            final String[] splitInfo = FS_PATTERN.split(info);
-            if (splitInfo.length > 6) {
-              final String extension = splitInfo[6];
-              if (uinfo.endsWith(FIELD_SEPARATOR + NOT_AVAILABLE)) {
-                recordMap.put(UINFO, uinfo + FIELD_SEPARATOR + extension);
-              }
+        // Fix up UINFO field wrt MINDEXER-41
+        final String uinfo = recordMap.get(UINFO);
+        final String info = recordMap.get(INFO);
+        if (uinfo != null && !(info == null || info.trim().length() == 0)) {
+          final String[] splitInfo = FS_PATTERN.split(info);
+          if (splitInfo.length > 6) {
+            final String extension = splitInfo[6];
+            if (uinfo.endsWith(FIELD_SEPARATOR + NOT_AVAILABLE)) {
+              recordMap.put(UINFO, uinfo + FIELD_SEPARATOR + extension);
             }
           }
-          return new Record(Type.ARTIFACT_ADD, recordMap, expandAddedArtifact(recordMap));
         }
+        return new Record(Type.ARTIFACT_ADD, recordMap, expandAddedArtifact(recordMap));
       }
     }
 
@@ -293,25 +291,25 @@ public class ChunkReader
     private Map<String, Object> expandDescriptor(final Map<String, String> raw) {
       final Map<String, Object> result = new HashMap<String, Object>();
       String[] r = FS_PATTERN.split(raw.get("IDXINFO"));
-      result.put("_repositoryId", r[1]);
+      result.put(Record.REPOSITORY_ID, r[1]);
       return result;
     }
 
     private Map<String, Object> expandAllGroups(final Map<String, String> raw) {
       final Map<String, Object> result = new HashMap<String, Object>();
-      putIfNotNullAsList(raw, "allGroupsList", result, "allGroups");
+      putIfNotNullAsList(raw, Record.ALL_GROUPS_LIST, result, "allGroups");
       return result;
     }
 
     private Map<String, Object> expandRootGroups(final Map<String, String> raw) {
       final Map<String, Object> result = new HashMap<String, Object>();
-      putIfNotNullAsList(raw, "rootGroupsList", result, "rootGroups");
+      putIfNotNullAsList(raw, Record.ROOT_GROUPS_LIST, result, "rootGroups");
       return result;
     }
 
     private Map<String, Object> expandDeletedArtifact(final Map<String, String> raw) {
       final Map<String, Object> result = new HashMap<String, Object>();
-      putIfNotNull(raw, "m", result, "_recordUpdated");
+      putIfNotNullTS(raw, "m", result, Record.REC_MODIFIED);
       if (raw.containsKey("del")) {
         expandUinfo(raw.get("del"), result);
       }
@@ -329,39 +327,39 @@ public class ChunkReader
       final String info = raw.get(INFO);
       if (info != null) {
         String[] r = FS_PATTERN.split(info);
-        result.put("_packaging", renvl(r[0]));
-        result.put("_lastModified", r[1]);
-        result.put("_size", r[2]);
-        result.put("_hasSources", "1".equals(r[3]) ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
-        result.put("_hasJavadoc", "1".equals(r[4]) ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
-        result.put("_hasSignatures", "1".equals(r[5]) ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+        result.put(Record.PACKAGING, renvl(r[0]));
+        result.put(Record.FILE_MODIFIED, Long.valueOf(r[1]));
+        result.put(Record.FILE_SIZE, Long.valueOf(r[2]));
+        result.put(Record.HAS_SOURCES, "1".equals(r[3]) ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+        result.put(Record.HAS_JAVADOC, "1".equals(r[4]) ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+        result.put(Record.HAS_SIGNATURE, "1".equals(r[5]) ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
         if (r.length > 6) {
-          result.put("_ext", r[6]);
+          result.put(Record.FILE_EXTENSION, r[6]);
         }
         else {
-          final String packaging = raw.get("_packaging");
-          if (raw.get("_classifier") != null
+          final String packaging = raw.get(Record.PACKAGING);
+          if (raw.get(Record.CLASSIFIER) != null
               || "pom".equals(packaging)
               || "war".equals(packaging)
               || "ear".equals(packaging)) {
-            result.put("_ext", packaging);
+            result.put(Record.FILE_EXTENSION, packaging);
           }
           else {
-            result.put("_ext", "jar"); // best guess
+            result.put(Record.FILE_EXTENSION, "jar"); // best guess
           }
         }
       }
-      putIfNotNull(raw, "m", result, "_recordUpdated");
-      putIfNotNull(raw, "n", result, "_name");
-      putIfNotNull(raw, "d", result, "_description");
-      putIfNotNull(raw, "1", result, "_sha1");
+      putIfNotNullTS(raw, "m", result, Record.REC_MODIFIED);
+      putIfNotNull(raw, "n", result, Record.NAME);
+      putIfNotNull(raw, "d", result, Record.DESCRIPTION);
+      putIfNotNull(raw, "1", result, Record.SHA1);
 
       // Jar file contents (optional)
-      putIfNotNullAsList(raw, "classnames", result, "_classNames");
+      putIfNotNullAsList(raw, "classnames", result, Record.CLASSNAMES);
 
       // Maven Plugin (optional)
-      putIfNotNull(raw, "px", result, "_pluginPrefix");
-      putIfNotNullAsList(raw, "gx", result, "_pluginGoals");
+      putIfNotNull(raw, "px", result, Record.PLUGIN_PREFIX);
+      putIfNotNullAsList(raw, "gx", result, Record.PLUGIN_GOALS);
 
       // OSGi (optional)
       putIfNotNull(raw, "Bundle-SymbolicName", result, "Bundle-SymbolicName");
@@ -385,18 +383,18 @@ public class ChunkReader
     private void expandUinfo(final String uinfo, final Map<String, Object> result) {
       if (uinfo != null) {
         String[] r = FS_PATTERN.split(uinfo);
-        result.put("_groupId", r[0]);
-        result.put("_artifactId", r[1]);
-        result.put("_version", r[2]);
+        result.put(Record.GROUP_ID, r[0]);
+        result.put(Record.ARTIFACT_ID, r[1]);
+        result.put(Record.VERSION, r[2]);
         String classifier = renvl(r[3]);
         if (classifier != null) {
-          result.put("_classifier", classifier);
+          result.put(Record.CLASSIFIER, classifier);
           if (r.length > 4) {
-            result.put("_ext", r[4]);
+            result.put(Record.FILE_EXTENSION, r[4]);
           }
         }
         else if (r.length > 4) {
-          result.put("_packaging", r[4]);
+          result.put(Record.PACKAGING, r[4]);
         }
       }
     }
@@ -414,6 +412,21 @@ public class ChunkReader
     String value = source.get(sourceName);
     if (value != null && value.trim().length() != 0) {
       target.put(targetName, value);
+    }
+  }
+
+  /**
+   * Helper to put a {@link Long} value from source map into target map, if not null.
+   */
+  private static void putIfNotNullTS(
+      final Map<String, String> source,
+      final String sourceName,
+      final Map<String, Object> target,
+      final String targetName)
+  {
+    String value = source.get(sourceName);
+    if (value != null && value.trim().length() != 0) {
+      target.put(targetName, Long.valueOf(value));
     }
   }
 
