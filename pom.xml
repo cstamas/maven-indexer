@@ -90,7 +90,7 @@ under the License.
     <eclipse-sisu.version>0.2.1</eclipse-sisu.version>
     <sisu-guice.version>3.2.2</sisu-guice.version>
 
-    <lucene.version>5.5.3</lucene.version>
+    <lucene.version>5.5.4</lucene.version>
     <maven.version>3.0.5</maven.version>
     <aether.version>1.0.0.v20140518</aether.version>
 
@@ -238,7 +238,7 @@ under the License.
         <artifactId>aether-util</artifactId>
         <version>${aether.version}</version>
       </dependency>
-      
+
       <!-- Maven -->
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -501,7 +501,7 @@ under the License.
             </excludes>
           </configuration>
         </plugin>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build 
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build
           itself. -->
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
