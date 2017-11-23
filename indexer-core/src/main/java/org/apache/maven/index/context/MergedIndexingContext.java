@@ -79,7 +79,7 @@ public class MergedIndexingContext
                                   boolean searchable, ContextMemberProvider membersProvider )
         throws IOException
     {
-        this( membersProvider, id, repositoryId, repository, FSDirectory.open( indexDirectoryFile ), searchable );
+        this( membersProvider, id, repositoryId, repository, FSDirectory.open( indexDirectoryFile.toPath() ), searchable );
 
         setIndexDirectoryFile( indexDirectoryFile );
     }
@@ -93,7 +93,7 @@ public class MergedIndexingContext
 
         if ( indexDirectory instanceof FSDirectory )
         {
-            setIndexDirectoryFile( ( (FSDirectory) indexDirectory ).getDirectory() );
+            setIndexDirectoryFile( ( (FSDirectory) indexDirectory ).getDirectory().toFile() );
         }
     }
 
@@ -282,6 +282,12 @@ public class MergedIndexingContext
         // noop
     }
 
+    public void replace( Directory directory, Set<String> allGroups, Set<String> rootGroups )
+        throws IOException
+    {
+        // noop
+    }
+
     public Directory getIndexDirectory()
     {
         return directory;
@@ -302,6 +308,7 @@ public class MergedIndexingContext
         {
             // best effort, to have a directory thru the life of a ctx
             File tmpFile = File.createTempFile( "mindexer-ctx" + id, "tmp" );
+            tmpFile.deleteOnExit();
             tmpFile.delete();
             tmpFile.mkdirs();
             this.directoryFile = tmpFile;

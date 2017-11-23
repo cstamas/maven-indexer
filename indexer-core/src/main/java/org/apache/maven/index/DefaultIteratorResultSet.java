@@ -111,7 +111,7 @@ public class DefaultIteratorResultSet
 
         this.matchHighlightRequests = request.getMatchHighlightRequests();
 
-        List<MatchHighlightRequest> matchHighlightRequests = new ArrayList<MatchHighlightRequest>();
+        List<MatchHighlightRequest> matchHighlightRequests = new ArrayList<>();
         for ( MatchHighlightRequest hr : request.getMatchHighlightRequests() )
         {
             Query rewrittenQuery = hr.getQuery().rewrite( indexSearcher.getIndexReader() );
@@ -368,7 +368,6 @@ public class DefaultIteratorResultSet
         
         Analyzer analyzer = context.getAnalyzer();
         TokenStream baseTokenStream = analyzer.tokenStream( field.getKey(), new StringReader( text ) );
-        baseTokenStream.reset();
         
         CachingTokenFilter tokenStream = new CachingTokenFilter(baseTokenStream);
 
@@ -389,9 +388,6 @@ public class DefaultIteratorResultSet
 
         List<String> bestFragments = getBestFragments( hr.getQuery(), formatter, tokenStream, text, 3 );
         
-        tokenStream.end();
-        tokenStream.close();
-        
         return bestFragments;
     }
 
@@ -407,7 +403,7 @@ public class DefaultIteratorResultSet
 
         TextFragment[] frag;
         // Get text
-        ArrayList<String> fragTexts = new ArrayList<String>( maxNumFragments );
+        ArrayList<String> fragTexts = new ArrayList<>( maxNumFragments );
 
         try
         {

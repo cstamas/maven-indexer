@@ -19,16 +19,16 @@ package org.apache.maven.indexer.examples.indexing;
  * under the License.
  */
 
+import org.apache.maven.index.Indexer;
+import org.apache.maven.index.Scanner;
+import org.apache.maven.index.context.IndexCreator;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.maven.index.Indexer;
-import org.apache.maven.index.Scanner;
-import org.apache.maven.index.context.IndexCreator;
 
 /**
  * A simple configuration holder class.
@@ -49,9 +49,7 @@ public class IndexerConfiguration
 
 
     @Inject
-    public IndexerConfiguration( Indexer indexer,
-                                 Scanner scanner,
-                                 Map<String, IndexCreator> indexers )
+    public IndexerConfiguration( Indexer indexer, Scanner scanner, Map<String, IndexCreator> indexers )
     {
         this.indexer = indexer;
         this.scanner = scanner;
@@ -60,13 +58,9 @@ public class IndexerConfiguration
 
     public List<IndexCreator> getIndexersAsList()
     {
-        List<IndexCreator> indexersAsList = new ArrayList<>();
-        for ( Map.Entry entry : indexers.entrySet() )
-        {
-            indexersAsList.add( ( IndexCreator ) entry.getValue() );
-        }
-
-        return indexersAsList;
+        return indexers == null ? //
+            new ArrayList<IndexCreator>( 0 ) //
+            : new ArrayList<>( indexers.values() );
     }
 
     public Indexer getIndexer()

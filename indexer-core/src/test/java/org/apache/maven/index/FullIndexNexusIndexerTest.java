@@ -22,6 +22,7 @@ package org.apache.maven.index;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -262,7 +263,7 @@ public class FullIndexNexusIndexerTest
 
             {
                 ArtifactInfoGroup ig = r.values().iterator().next();
-                ArrayList<ArtifactInfo> list1 = new ArrayList<ArtifactInfo>( ig.getArtifactInfos() );
+                ArrayList<ArtifactInfo> list1 = new ArrayList<>( ig.getArtifactInfos() );
                 assertEquals( r.toString(), 2, list1.size() );
 
                 ArtifactInfo ai1 = list1.get( 0 );
@@ -335,9 +336,8 @@ public class FullIndexNexusIndexerTest
     public void testIndexTimestamp()
         throws Exception
     {
-        final File targetDir = File.createTempFile( "testIndexTimestamp", "ut-tmp" );
-        targetDir.delete();
-        targetDir.mkdirs();
+        final File targetDir = Files.createTempDirectory("testIndexTimestamp" ).toFile();
+        targetDir.deleteOnExit();
 
         final IndexPacker indexPacker = lookup( IndexPacker.class );
         final IndexSearcher indexSearcher = context.acquireIndexSearcher();
@@ -356,7 +356,7 @@ public class FullIndexNexusIndexerTest
 
         File newIndex = new File( getBasedir(), "target/test-new" );
 
-        Directory newIndexDir = FSDirectory.open( newIndex );
+        Directory newIndexDir = FSDirectory.open( newIndex.toPath() );
 
         IndexingContext newContext =
             nexusIndexer.addIndexingContext( "test-new", "test", null, newIndexDir, null, null, DEFAULT_CREATORS );
@@ -379,7 +379,7 @@ public class FullIndexNexusIndexerTest
 
         assertEquals( 2, r.size() );
 
-        List<ArtifactInfo> list = new ArrayList<ArtifactInfo>( r );
+        List<ArtifactInfo> list = new ArrayList<>( r );
 
         assertEquals( 2, list.size() );
 
@@ -397,7 +397,7 @@ public class FullIndexNexusIndexerTest
 
         newContext.close( false );
 
-        newIndexDir = FSDirectory.open( newIndex );
+        newIndexDir = FSDirectory.open( newIndex.toPath() );
 
         newContext =
             nexusIndexer.addIndexingContext( "test-new", "test", null, newIndexDir, null, null, DEFAULT_CREATORS );
