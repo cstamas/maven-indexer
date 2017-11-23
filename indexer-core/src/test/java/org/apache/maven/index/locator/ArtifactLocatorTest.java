@@ -24,7 +24,7 @@ import java.io.File;
 import org.apache.maven.index.AbstractNexusIndexerTest;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactContextProducer;
-import org.apache.maven.index.NexusIndexer;
+import org.apache.maven.index.Indexer;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
 import org.apache.maven.index.artifact.Gav;
 import org.apache.maven.index.artifact.M2GavCalculator;
@@ -39,10 +39,11 @@ public class ArtifactLocatorTest
     private ArtifactPackagingMapper artifactPackagingMapper;
 
     @Override
-    protected void prepareNexusIndexer( NexusIndexer nexusIndexer )
+    protected void prepareNexusIndexer( Indexer nexusIndexer )
         throws Exception
     {
-        context = nexusIndexer.addIndexingContext( "al-test", "al-test", repo, indexDir, null, null, FULL_CREATORS );
+      context = nexusIndexer
+          .createIndexingContext("al-test", "al-test", repo, indexDir, null, null, true, true, FULL_CREATORS);
 
         nexusIndexer.scan( context );
 

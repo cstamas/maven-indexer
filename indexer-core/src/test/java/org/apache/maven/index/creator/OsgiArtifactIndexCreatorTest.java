@@ -28,8 +28,11 @@ import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactInfo;
 import org.apache.maven.index.FlatSearchRequest;
 import org.apache.maven.index.FlatSearchResponse;
+import org.apache.maven.index.Indexer;
 import org.apache.maven.index.NexusIndexer;
 import org.apache.maven.index.OSGI;
+import org.apache.maven.index.Scanner;
+import org.apache.maven.index.ScanningRequest;
 import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.expr.StringSearchExpression;
@@ -50,7 +53,9 @@ public class OsgiArtifactIndexCreatorTest
             "osgi.service;effective:=active;objectClass=\"org.apache.karaf.features.RegionDigraphPersistence\"";
     static final String INDEX_ID = "osgi-test1";
     protected IndexCreator indexCreator;
-    private NexusIndexer nexusIndexer;
+    private Indexer nexusIndexer;
+    private Scanner scanner;
+    private IndexingContext context;
 
     @Override
     public void setUp()
@@ -60,7 +65,9 @@ public class OsgiArtifactIndexCreatorTest
 
         indexCreator = this.lookup( IndexCreator.class, OsgiArtifactIndexCreator.ID );
 
-        nexusIndexer = this.lookup( NexusIndexer.class );
+        nexusIndexer = this.lookup( Indexer.class );
+
+        scanner = this.lookup( Scanner.class );
     }
 
     public void testAssertIndexCreatorComponentExists()
@@ -176,13 +183,12 @@ public class OsgiArtifactIndexCreatorTest
             Arrays.<IndexCreator>asList( new MinimalArtifactInfoIndexCreator(), new JarFileContentsIndexCreator(),
                                          new MavenPluginArtifactInfoIndexCreator(), new OsgiArtifactIndexCreator() );
 
-        IndexingContext indexingContext =
-            nexusIndexer.addIndexingContext( INDEX_ID, INDEX_ID, repo, repoIndexDir, "http://www.apache.org",
-                                             "http://www.apache.org/.index", indexCreators );
-        indexingContext.setSearchable( true );
-        nexusIndexer.scan( indexingContext, false );
-
-
+        context = nexusIndexer.createIndexingContext( INDEX_ID, INDEX_ID, repo, repoIndexDir, "http://www.apache.org",
+                                             "http://www.apache.org/.index", true, true, indexCreators );
+        context.setSearchable( true );
+        scanner.scan(
+            new ScanningRequest(context, null, null)
+        );
     }
 
     public void testIndexOSGIRepoThenSearch()

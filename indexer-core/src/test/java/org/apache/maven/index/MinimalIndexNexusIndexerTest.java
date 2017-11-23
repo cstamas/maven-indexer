@@ -22,10 +22,6 @@ package org.apache.maven.index;
 import java.util.Set;
 
 import org.apache.lucene.search.Query;
-import org.apache.maven.index.ArtifactInfo;
-import org.apache.maven.index.FlatSearchRequest;
-import org.apache.maven.index.FlatSearchResponse;
-import org.apache.maven.index.NexusIndexer;
 
 /**
  * @author Jason van Zyl
@@ -35,12 +31,12 @@ public class MinimalIndexNexusIndexerTest
     extends AbstractRepoNexusIndexerTest
 {
     @Override
-    protected void prepareNexusIndexer( NexusIndexer nexusIndexer )
+    protected void prepareNexusIndexer( Indexer nexusIndexer )
         throws Exception
     {
-        context = nexusIndexer.addIndexingContext( "test-minimal", "test", repo, indexDir, null, null, MIN_CREATORS );
+        context = nexusIndexer.createInMemoryIndexingContext( "test-minimal", "test", repo, null, null, true, MIN_CREATORS );
 
-        nexusIndexer.scan( context );
+        scan( context );
     }
 
     public void testNEXUS2712()

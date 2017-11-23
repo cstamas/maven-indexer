@@ -67,7 +67,7 @@ public class ScanningRequest
 
     public File getStartingDirectory()
     {
-        if ( StringUtils.isBlank( startingPath ) )
+        if (StringUtils.isBlank(startingPath) )
         {
             return getIndexingContext().getRepository();
         }

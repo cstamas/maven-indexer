@@ -295,7 +295,7 @@ public class DefaultIncrementalHandler
         String remoteChainId = remoteProps.getProperty( IndexingContext.INDEX_CHAIN_ID );
 
         // If no chain id, or not the same, do whole download
-        if ( StringUtils.isEmpty( localChainId ) || !localChainId.equals( remoteChainId ) )
+        if (StringUtils.isBlank( localChainId ) || !localChainId.equals( remoteChainId ) )
         {
             return false;
         }
@@ -304,7 +304,7 @@ public class DefaultIncrementalHandler
 
         // no counter, cant retrieve chunks
         // not a number, cant retrieve chunks
-        if ( StringUtils.isEmpty( counterProp ) || !StringUtils.isNumeric( counterProp ) )
+        if ( StringUtils.isBlank( counterProp ) || !StringUtils.isNumeric( counterProp ) )
         {
             return false;
         }

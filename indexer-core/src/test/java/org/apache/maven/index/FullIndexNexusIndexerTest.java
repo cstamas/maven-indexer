@@ -58,14 +58,14 @@ public class FullIndexNexusIndexerTest
     extends DefaultIndexNexusIndexerTest
 {
     @Override
-    protected void prepareNexusIndexer( NexusIndexer nexusIndexer )
+    protected void prepareNexusIndexer( Indexer nexusIndexer )
         throws Exception
     {
-        context = nexusIndexer.addIndexingContext( "test-default", "test", repo, indexDir, null, null, FULL_CREATORS );
+        context = nexusIndexer.createInMemoryIndexingContext( "test-default", "test", repo,  null, null, true, FULL_CREATORS );
 
         assertNull( context.getTimestamp() ); // unknown upon creation
 
-        nexusIndexer.scan( context );
+        scan( context );
 
         assertNotNull( context.getTimestamp() );
     }
@@ -356,10 +356,8 @@ public class FullIndexNexusIndexerTest
 
         File newIndex = new File( getBasedir(), "target/test-new" );
 
-        Directory newIndexDir = FSDirectory.open( newIndex.toPath() );
-
         IndexingContext newContext =
-            nexusIndexer.addIndexingContext( "test-new", "test", null, newIndexDir, null, null, DEFAULT_CREATORS );
+            nexusIndexer.createIndexingContext( "test-new", "test", null, newIndex, null, null, true, true, DEFAULT_CREATORS );
 
         final IndexUpdater indexUpdater = lookup( IndexUpdater.class );
         indexUpdater.fetchAndUpdateIndex( new IndexUpdateRequest( newContext, new DefaultIndexUpdater.FileFetcher( targetDir ) ) );
@@ -397,10 +395,8 @@ public class FullIndexNexusIndexerTest
 
         newContext.close( false );
 
-        newIndexDir = FSDirectory.open( newIndex.toPath() );
-
         newContext =
-            nexusIndexer.addIndexingContext( "test-new", "test", null, newIndexDir, null, null, DEFAULT_CREATORS );
+            nexusIndexer.createIndexingContext( "test-new", "test", null, newIndex, null, null, true, true, DEFAULT_CREATORS );
 
         indexUpdater.fetchAndUpdateIndex( new IndexUpdateRequest( newContext, new DefaultIndexUpdater.FileFetcher( targetDir ) ) );
 

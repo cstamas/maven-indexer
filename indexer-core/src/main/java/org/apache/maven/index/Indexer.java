@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.apache.lucene.search.Query;
 import org.apache.maven.index.context.ContextMemberProvider;
 import org.apache.maven.index.context.ExistingLuceneIndexMismatchException;
@@ -77,6 +79,42 @@ public interface Indexer
         throws IOException, ExistingLuceneIndexMismatchException, IllegalArgumentException;
 
     /**
+     * Creates an indexing context backed with in-memory Lucene index. Usable for tests.
+     *
+     * @param id             the ID of the context.
+     * @param repositoryId   the ID of the repository that this context represents. You might have several contexts
+     *                       indexing same repository ID, but on separate locations.
+     * @param repository     the location of the repository on FS.
+     * @param repositoryUrl  the location of the remote repository or {@code null} if this indexing context does not need
+     *                       remote updates (is not a proxy).
+     * @param indexUpdateUrl the alternate location of the remote repository indexes (if they are not in default place)
+     *                       or {@code null} if defaults are applicable.
+     * @param searchable     if context should be searched in non-targeted mode.
+     * @param indexers       the set of indexers to apply to this context.
+     * @return the context created.
+     * @throws IOException                          in case of some serious IO problem.
+     * @throws ExistingLuceneIndexMismatchException if a Lucene index already exists where location is specified, but
+     *                                              it has no Nexus descriptor record or it has, but the embedded repoId
+     *                                              differs from the repoId
+     *                                              specified from the supplied one. Never thrown if {@code reclaim} is
+     *                                              {@code true}, as in that case, if
+     *                                              Lucene index exists but any of those criteria above are not met, the
+     *                                              existing index is overwritten,
+     *                                              and equipped with proper descriptor silently.
+     * @throws IllegalArgumentException             in case the supplied list of IndexCreators are having non-satisfiable
+     *                                              dependencies.
+     * @since 6.0
+     */
+    IndexingContext createInMemoryIndexingContext(String id,
+                                                  String repositoryId,
+                                                  File repository,
+                                                  @Nullable String repositoryUrl,
+                                                  @Nullable String indexUpdateUrl,
+                                                  boolean searchable,
+                                                  List<? extends IndexCreator> indexers)
+        throws IOException, IllegalArgumentException;
+
+    /**
      * Creates a merged indexing context.
      * 
      * @param id the ID of the context.
@@ -107,6 +145,18 @@ public interface Indexer
     // ----------------------------------------------------------------------------
     // Modifying
     // ----------------------------------------------------------------------------
+
+    /**
+     * Adds the passed in artifact context to passed in indexing context.
+     *
+     * @param ac
+     * @param context
+     * @throws IOException
+     *
+     * @since 6.0
+     */
+    void addArtifactToIndex( ArtifactContext ac, IndexingContext context )
+        throws IOException;
 
     /**
      * Adds the passed in artifact contexts to passed in indexing context.
@@ -195,6 +245,20 @@ public interface Indexer
     // ----------------------------------------------------------------------------
     // Query construction
     // ----------------------------------------------------------------------------
+
+    /**
+     * Helper method to construct Lucene query for given field without need for knowledge (on caller side) HOW is a
+     * field indexed, and WHAT query is needed to achieve that search.
+     *
+     * @param field
+     * @param expression
+     * @param searchType
+     * @return the query to be used for search.
+     * @see SearchType
+     * @throws IllegalArgumentException
+     */
+    Query constructQuery( Field field, String expression, SearchType searchType )
+        throws IllegalArgumentException;
 
     /**
      * Helper method to construct Lucene query for given field without need for knowledge (on caller side) HOW is a

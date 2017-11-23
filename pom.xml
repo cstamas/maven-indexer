@@ -198,6 +198,12 @@ under the License.
         </exclusions>
       </dependency>
 
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+
       <!-- Lucene -->
       <dependency>
         <groupId>org.apache.lucene</groupId>
@@ -248,11 +254,6 @@ under the License.
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
         <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-utils</artifactId>
-        <version>3.0.15</version>
       </dependency>
 
       <!-- Wagon, as optional for those want to use ResourceFetcher backed by Wagons -->

@@ -24,9 +24,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
-
 import org.apache.lucene.search.Query;
-import org.apache.maven.index.context.DefaultIndexingContext;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.expr.UserInputSearchExpression;
 
@@ -38,11 +36,20 @@ public class ConcurrentUseTest
     protected File repo = new File( getBasedir(), "src/test/repo" );
 
     @Override
-    protected void prepareNexusIndexer( NexusIndexer nexusIndexer )
+    protected void prepareNexusIndexer( Indexer nexusIndexer )
         throws Exception
     {
-        context =
-            nexusIndexer.addIndexingContext( "test-default", "test", repo, indexDir, null, null, DEFAULT_CREATORS );
+        context = nexusIndexer.createIndexingContext(
+            "test-default",
+            "test",
+            repo,
+            indexDir,
+            null,
+            null,
+            true,
+            true,
+            DEFAULT_CREATORS
+        );
 
         assertNull( context.getTimestamp() ); // unknown upon creation
 
@@ -110,7 +117,7 @@ public class ConcurrentUseTest
 
     private static final AtomicInteger versionSource = new AtomicInteger( 1 );
 
-    protected void addToIndex( final NexusIndexer nexusIndexer, final IndexingContext indexingContext )
+    protected void addToIndex( final Indexer nexusIndexer, final IndexingContext indexingContext )
         throws IOException
     {
         final ArtifactInfo artifactInfo =
@@ -122,7 +129,7 @@ public class ConcurrentUseTest
         nexusIndexer.addArtifactToIndex( ac, indexingContext );
     }
 
-    protected void deleteFromIndex( final NexusIndexer nexusIndexer, final IndexingContext indexingContext )
+    protected void deleteFromIndex( final Indexer nexusIndexer, final IndexingContext indexingContext )
         throws IOException
     {
         // TODO: delete some of those already added
@@ -135,7 +142,7 @@ public class ConcurrentUseTest
         // deleted++;
     }
 
-    protected int readIndex( final NexusIndexer nexusIndexer, final IndexingContext indexingContext )
+    protected int readIndex( final Indexer nexusIndexer, final IndexingContext indexingContext )
         throws IOException
     {
         final Query q =
@@ -153,7 +160,7 @@ public class ConcurrentUseTest
     {
         private final ConcurrentUseTest test;
 
-        private final NexusIndexer nexusIndexer;
+        private final Indexer nexusIndexer;
 
         private final IndexingContext searchIndexingContext;
 
@@ -169,7 +176,7 @@ public class ConcurrentUseTest
 
         private Throwable t;
 
-        public IndexUserThread( final ConcurrentUseTest test, final NexusIndexer nexusIndexer,
+        public IndexUserThread( final ConcurrentUseTest test, final Indexer nexusIndexer,
                                 final IndexingContext searchIndexingContext,
                                 final IndexingContext modifyIndexingContext, ArtifactInfo artifactInfo )
         {

@@ -32,7 +32,11 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Bits;
+import org.apache.maven.index.expr.SourcedSearchExpression;
+import org.apache.maven.index.expr.UserInputSearchExpression;
 import org.apache.maven.index.search.grouping.GAGrouping;
+
+import static java.util.Arrays.asList;
 
 public abstract class AbstractRepoNexusIndexerTest
     extends AbstractNexusIndexerTest
@@ -81,7 +85,7 @@ public abstract class AbstractRepoNexusIndexerTest
         throws Exception
     {
         FlatSearchRequest request =
-            new FlatSearchRequest( nexusIndexer.constructQuery( MAVEN.GROUP_ID, "org", SearchType.SCORED ) );
+            new FlatSearchRequest( nexusIndexer.constructQuery( MAVEN.GROUP_ID,  new UserInputSearchExpression("org") ) );
 
         // See MINDEXER-22
         // Flat search is not pageable
@@ -395,7 +399,11 @@ public abstract class AbstractRepoNexusIndexerTest
     public void testIdentify()
         throws Exception
     {
-        Collection<ArtifactInfo> ais = nexusIndexer.identify( MAVEN.SHA1, "4d2db265eddf1576cb9d896abc90c7ba46b48d87" );
+        ;
+        Collection<ArtifactInfo> ais = nexusIndexer.identify(
+            nexusIndexer.constructQuery(MAVEN.SHA1, new SourcedSearchExpression("4d2db265eddf1576cb9d896abc90c7ba46b48d87")),
+            asList(context)
+        );
         
         assertEquals( 1, ais.size() );
 
@@ -413,7 +421,7 @@ public abstract class AbstractRepoNexusIndexerTest
 
         File artifact = new File( repo, "qdox/qdox/1.5/qdox-1.5.jar" );
 
-        ais = nexusIndexer.identify( artifact );
+        ais = nexusIndexer.identify( artifact, asList(context) );
         
         assertEquals( 1, ais.size() );
         

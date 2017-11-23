@@ -32,12 +32,11 @@ import org.apache.maven.index.creator.JarFileContentsIndexCreator;
 import org.apache.maven.index.creator.MavenPluginArtifactInfoIndexCreator;
 import org.apache.maven.index.creator.MinimalArtifactInfoIndexCreator;
 import org.apache.maven.index.creator.OsgiArtifactIndexCreator;
+import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.util.version.GenericVersionScheme;
 import org.eclipse.aether.version.InvalidVersionSpecificationException;
 import org.eclipse.aether.version.Version;
 import org.eclipse.aether.version.VersionScheme;
-
-import com.google.common.base.Strings;
 
 /**
  * ArtifactInfo holds the values known about an repository artifact. This is a simple Value Object kind of stuff.
@@ -430,7 +429,7 @@ public class ArtifactInfo
     public String toString()
     {
         final StringBuilder result = new StringBuilder( getUinfo() );
-        if ( !Strings.isNullOrEmpty( getPackaging() ) )
+        if ( !StringUtils.isBlank( getPackaging() ) )
         {
             result.append( "[" ).append( getPackaging() ).append( "]" );
         }

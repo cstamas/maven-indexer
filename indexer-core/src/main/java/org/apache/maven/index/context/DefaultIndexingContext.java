@@ -184,7 +184,6 @@ public class DefaultIndexingContext
                         repositoryUrl, indexUpdateUrl, indexCreators, reclaimIndex );
     }
 
-    @Deprecated
     public DefaultIndexingContext( String id, String repositoryId, File repository, Directory indexDirectory,
                                    String repositoryUrl, String indexUpdateUrl,
                                    List<? extends IndexCreator> indexCreators, boolean reclaimIndex )

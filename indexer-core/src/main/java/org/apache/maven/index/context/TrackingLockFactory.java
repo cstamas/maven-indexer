@@ -25,8 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
-import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.HashSet;
+
+import static org.apache.maven.index.util.Preconditions.checkNotNull;
 
 /**
  *

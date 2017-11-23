@@ -80,7 +80,7 @@ public class DefaultSearchEngineTest
     }
 
     @Override
-    protected void prepareNexusIndexer( NexusIndexer nexusIndexer )
+    protected void prepareNexusIndexer( Indexer nexusIndexer )
         throws Exception
     {
         File repo = new File( getBasedir(), "src/test/repo" );

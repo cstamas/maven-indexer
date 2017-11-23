@@ -29,7 +29,6 @@ import java.io.UTFDataFormatException;
 import java.util.Date;
 import java.util.zip.GZIPInputStream;
 
-import com.google.common.base.Strings;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.apache.lucene.document.Document;
@@ -40,6 +39,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.maven.index.ArtifactInfo;
 import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * An index data reader used to parse transfer index format.
@@ -156,7 +156,7 @@ public class IndexDataReader
         // Fix up UINFO field wrt MINDEXER-41
         final Field uinfoField = (Field) doc.getField( ArtifactInfo.UINFO );
         final String info =  doc.get( ArtifactInfo.INFO );
-        if (uinfoField!= null && !Strings.isNullOrEmpty(info)) {
+        if (uinfoField!= null && !StringUtils.isBlank(info)) {
             final String[] splitInfo = ArtifactInfo.FS_PATTERN.split( info );
             if ( splitInfo.length > 6 )
             {

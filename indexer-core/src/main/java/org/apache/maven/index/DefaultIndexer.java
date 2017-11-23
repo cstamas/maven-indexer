@@ -19,9 +19,6 @@ package org.apache.maven.index;
  * under the License.
  */
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,8 +28,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.store.RAMDirectory;
 import org.apache.maven.index.context.ContextMemberProvider;
 import org.apache.maven.index.context.DefaultIndexingContext;
 import org.apache.maven.index.context.ExistingLuceneIndexMismatchException;
@@ -42,7 +46,6 @@ import org.apache.maven.index.context.MergedIndexingContext;
 import org.apache.maven.index.expr.SearchExpression;
 import org.apache.maven.index.expr.SourcedSearchExpression;
 import org.apache.maven.index.util.IndexCreatorSorter;
-import org.codehaus.plexus.util.IOUtil;
 
 /**
  * A default {@link Indexer} implementation.
@@ -88,9 +91,26 @@ public class DefaultIndexer
         return context;
     }
 
-    public IndexingContext createMergedIndexingContext( String id, String repositoryId, File repository,
-                                                        File indexDirectory, boolean searchable,
-                                                        ContextMemberProvider membersProvider )
+    @Override
+    public IndexingContext createInMemoryIndexingContext(final String id,
+                                                         final String repositoryId,
+                                                         final File repository,
+                                                         @Nullable final String repositoryUrl,
+                                                         @Nullable final String indexUpdateUrl,
+                                                         final boolean searchable,
+                                                         final List<? extends IndexCreator> indexers)
+        throws IOException, IllegalArgumentException
+    {
+        final IndexingContext context =
+            new DefaultIndexingContext( id, repositoryId, repository, new RAMDirectory(), repositoryUrl, indexUpdateUrl,
+                IndexCreatorSorter.sort( indexers ), true );
+        context.setSearchable( searchable );
+        return context;
+    }
+
+    public IndexingContext createMergedIndexingContext(String id, String repositoryId, File repository,
+                                                       File indexDirectory, boolean searchable,
+                                                       ContextMemberProvider membersProvider )
         throws IOException
     {
         IndexingContext context =
@@ -108,7 +128,16 @@ public class DefaultIndexer
     // Modifying
     // ----------------------------------------------------------------------------
 
-    public void addArtifactsToIndex( Collection<ArtifactContext> ac, IndexingContext context )
+    public void addArtifactToIndex(final ArtifactContext ac, final IndexingContext context) throws IOException {
+        if ( ac != null )
+        {
+            indexerEngine.update(context, ac);
+
+            context.commit();
+        }
+    }
+
+    public void addArtifactsToIndex(Collection<ArtifactContext> ac, IndexingContext context )
         throws IOException
     {
         if ( ac != null && !ac.isEmpty() )
@@ -231,7 +260,21 @@ public class DefaultIndexer
     // Query construction
     // ----------------------------------------------------------------------------
 
-    public Query constructQuery( Field field, SearchExpression expression )
+    @Override
+    public Query constructQuery(final Field field, final String expression, final SearchType searchType)
+        throws IllegalArgumentException
+    {
+        try
+        {
+            return queryCreator.constructQuery( field, expression, searchType );
+        }
+        catch ( ParseException e )
+        {
+            throw new IllegalArgumentException( e );
+        }
+    }
+
+    public Query constructQuery(Field field, SearchExpression expression )
         throws IllegalArgumentException
     {
         try

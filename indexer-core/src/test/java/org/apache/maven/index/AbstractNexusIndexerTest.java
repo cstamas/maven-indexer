@@ -21,6 +21,9 @@ package org.apache.maven.index;
 
 import java.io.IOException;
 import java.util.Collection;
+
+import javax.annotation.Nullable;
+
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.store.Directory;
@@ -32,7 +35,7 @@ public abstract class AbstractNexusIndexerTest
 {
     protected Indexer nexusIndexer;
 
-    protected Directory indexDir = new RAMDirectory();
+    protected Scanner scanner;
 
     protected IndexingContext context;
 
@@ -44,6 +47,7 @@ public abstract class AbstractNexusIndexerTest
         super.setUp();
         // FileUtils.deleteDirectory( indexDir );
         nexusIndexer = lookup( Indexer.class );
+        scanner = lookup( Scanner.class );
         prepareNexusIndexer( nexusIndexer );
     }
 
@@ -63,7 +67,7 @@ public abstract class AbstractNexusIndexerTest
     protected void unprepareNexusIndexer( Indexer nexusIndexer )
         throws Exception
     {
-        nexusIndexer.removeIndexingContext( context, false );
+        nexusIndexer.closeIndexingContext( context, false );
     }
 
     protected void assertGroup( int expected, String group, IndexingContext context )
@@ -85,4 +89,13 @@ public abstract class AbstractNexusIndexerTest
         assertEquals( artifacts.toString(), expected, artifacts.size() );
     }
 
+    protected void scan( IndexingContext context ) {
+        scan( context, null );
+    }
+
+    protected void scan(IndexingContext context, @Nullable String startingPath) {
+        scanner.scan(
+            new ScanningRequest( context, null, startingPath )
+        );
+    }
 }

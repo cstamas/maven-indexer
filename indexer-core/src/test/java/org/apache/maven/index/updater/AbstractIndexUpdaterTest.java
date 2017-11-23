@@ -22,19 +22,21 @@ package org.apache.maven.index.updater;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.maven.index.AbstractIndexCreatorHelper;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactInfo;
+import org.apache.maven.index.Indexer;
 import org.apache.maven.index.IteratorSearchRequest;
 import org.apache.maven.index.IteratorSearchResponse;
 import org.apache.maven.index.MAVEN;
-import org.apache.maven.index.NexusIndexer;
-import org.apache.maven.index.SearchType;
 import org.apache.maven.index.artifact.Gav;
 import org.apache.maven.index.context.IndexingContext;
+import org.apache.maven.index.expr.SourcedSearchExpression;
 import org.apache.maven.index.packer.IndexPacker;
 import org.apache.maven.index.packer.IndexPackingRequest;
 import org.codehaus.plexus.util.FileUtils;
@@ -52,7 +54,7 @@ public abstract class AbstractIndexUpdaterTest
 
     String repositoryUrl = "http://repo1.maven.org/maven2/";
 
-    NexusIndexer indexer;
+    Indexer indexer;
 
     IndexUpdater updater;
 
@@ -75,15 +77,23 @@ public abstract class AbstractIndexUpdaterTest
         indexDir = super.getDirectory( "indexerUpdater" );
         indexDir.mkdirs();
 
-        indexer = lookup( NexusIndexer.class );
+        indexer = lookup( Indexer.class );
 
         updater = lookup( IndexUpdater.class );
 
         packer = lookup( IndexPacker.class );
 
-        context =
-            indexer.addIndexingContext( repositoryId, repositoryId, repoDir, indexDir, repositoryUrl, null,
-                MIN_CREATORS );
+        context = indexer.createIndexingContext(
+            repositoryId,
+            repositoryId,
+            repoDir,
+            indexDir,
+            repositoryUrl,
+            null,
+            true,
+            true,
+            MIN_CREATORS
+        );
     }
 
     @Override
@@ -93,7 +103,7 @@ public abstract class AbstractIndexUpdaterTest
         super.tearDown();
 
         // this one closes it too
-        indexer.removeIndexingContext( context, true );
+        indexer.closeIndexingContext( context, true );
 
         FileUtils.forceDelete( testBasedir );
 
@@ -102,8 +112,8 @@ public abstract class AbstractIndexUpdaterTest
         FileUtils.forceDelete( indexDir );
     }
 
-    protected ArtifactContext createArtifactContext( String repositoryId, String groupId, String artifactId,
-                                                     String version, String classifier )
+    protected List<ArtifactContext> createArtifactContext(String repositoryId, String groupId, String artifactId,
+                                                          String version, String classifier )
    {
         String path = createPath( groupId, artifactId, version, classifier );
         File pomFile = new File( path + ".pom" );
@@ -113,7 +123,7 @@ public abstract class AbstractIndexUpdaterTest
         Gav gav =
             new Gav( groupId, artifactId, version, classifier, "jar", null, null, artifact.getName(), false,
                 null, false, null );
-        return new ArtifactContext( pomFile, artifact, metadata, artifactInfo, gav );
+        return Collections.singletonList(new ArtifactContext( pomFile, artifact, metadata, artifactInfo, gav ));
     }
 
     protected String createPath( String groupId, String artifactId, String version, String classifier )
@@ -140,7 +150,7 @@ public abstract class AbstractIndexUpdaterTest
     protected void searchFor( String groupId, int expected, IndexingContext context )
         throws IOException, Exception
     {
-        Query q = indexer.constructQuery( MAVEN.GROUP_ID, groupId, SearchType.EXACT );
+        Query q = indexer.constructQuery( MAVEN.GROUP_ID, new SourcedSearchExpression( groupId ) );
 
         IteratorSearchRequest req;
 

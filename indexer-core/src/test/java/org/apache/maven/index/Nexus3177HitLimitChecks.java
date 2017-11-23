@@ -33,32 +33,29 @@ public class Nexus3177HitLimitChecks
 {
     protected File repo = new File( getBasedir(), "src/test/repo" );
 
-    protected Directory secondIndexDir = new RAMDirectory();
-
     protected IndexingContext secondContext;
 
     @Override
-    protected void prepareNexusIndexer( NexusIndexer nexusIndexer )
+    protected void prepareNexusIndexer( Indexer nexusIndexer )
         throws Exception
     {
         context =
-            nexusIndexer.addIndexingContext( "nexus-3177", "nexus-3177", repo, indexDir, null, null, DEFAULT_CREATORS );
+            nexusIndexer.createInMemoryIndexingContext( "nexus-3177", "nexus-3177", repo, null, null, true, DEFAULT_CREATORS );
 
         secondContext =
-            nexusIndexer.addIndexingContext( "nexus-3177b", "nexus-3177b", repo, secondIndexDir, null, null,
-                DEFAULT_CREATORS );
+            nexusIndexer.createInMemoryIndexingContext( "nexus-3177b", "nexus-3177b", repo, null, null, true, DEFAULT_CREATORS );
 
-        nexusIndexer.scan( context );
-        nexusIndexer.scan( secondContext );
+        scan( context );
+        scan( secondContext );
     }
 
     @Override
-    protected void unprepareNexusIndexer( NexusIndexer nexusIndexer )
+    protected void unprepareNexusIndexer( Indexer nexusIndexer )
         throws Exception
     {
         super.unprepareNexusIndexer( nexusIndexer );
 
-        nexusIndexer.removeIndexingContext( secondContext, false );
+        nexusIndexer.closeIndexingContext( secondContext, false );
     }
 
     // ===================================================================

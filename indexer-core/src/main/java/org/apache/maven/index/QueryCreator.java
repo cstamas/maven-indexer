@@ -47,8 +47,7 @@ public interface QueryCreator
      * construct queries (single term or phrase queries) against <b>single field</b>.
      * 
      * @param field
-     * @param query
-     * @param type
+     * @param expression
      * @return
      * @throws ParseException if query parsing is unsuccessful.
      */
@@ -64,7 +63,6 @@ public interface QueryCreator
      * @param type
      * @return
      * @throws ParseException if query parsing is unsuccessful.
-     * @deprecated Use {@link #constructQuery(Field, SearchExpression)} instead.
      */
     Query constructQuery( Field field, String query, SearchType type )
         throws ParseException;

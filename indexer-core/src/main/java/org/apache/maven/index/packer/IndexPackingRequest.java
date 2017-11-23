@@ -24,10 +24,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.maven.index.context.IndexingContext;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.maven.index.util.Preconditions.checkNotNull;
 
 /**
  * An index packing request.
