@@ -23,7 +23,7 @@ under the License.
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>34</version>
+    <version>35-SNAPSHOT</version>
     <relativePath/>
   </parent>
 
@@ -92,10 +92,10 @@ under the License.
     <eclipse-sisu.version>0.3.5</eclipse-sisu.version>
     <guice.version>5.0.1</guice.version>
     <lucene.version>5.5.5</lucene.version>
-    <maven.version>3.8.4</maven.version>
-    <resolver.version>1.7.3</resolver.version>
-    <archetype.version>3.2.0</archetype.version>
-    <wagon.version>3.4.3</wagon.version>
+    <maven.version>4.0.0-alpha-1-SNAPSHOT</maven.version>
+    <resolver.version>1.8.0-SNAPSHOT</resolver.version>
+    <archetype.version>3.2.2-SNAPSHOT</archetype.version>
+    <wagon.version>3.5.2-SNAPSHOT</wagon.version>
     <surefire.version>2.22.2</surefire.version>
     <slf4j.version>1.7.32</slf4j.version>
     <maven.site.path>maven-indexer-archives/maven-indexer-LATEST</maven.site.path>

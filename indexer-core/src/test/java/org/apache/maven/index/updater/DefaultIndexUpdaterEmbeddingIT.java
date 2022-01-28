@@ -61,7 +61,7 @@ public class DefaultIndexUpdaterEmbeddingIT
         throws Exception
     {
         int port;
-        try ( final ServerSocket ss = new ServerSocket( 0 ) )
+        try ( ServerSocket ss = new ServerSocket( 0 ) )
         {
             ss.setReuseAddress( true );
             port = ss.getLocalPort();
